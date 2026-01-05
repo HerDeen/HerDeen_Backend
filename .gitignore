@@ -1,0 +1,6 @@
+node_modules
+.env
+src/utils/quran.ts
+src/controller/quran.controllers.ts
+src/interface/quran.interface.ts
+src/service/quran.services.ts
