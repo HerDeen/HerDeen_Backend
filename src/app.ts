@@ -6,12 +6,13 @@ import { PORT } from "./config/system.variable";
 import { mongoConnection } from "./config/db.connection";
 import router from "./router/app.router";
 import { handleCustomError } from "./middleware/errorHandler";
+import { limiter } from "./utils/rate.limit";
 
 const app = express();
 
 app.use(express.json());
-
-app.use("/api/v1/", router);
+app.use(limiter);
+app.use("/api/v1", router);
 
 app.use(handleCustomError);
 

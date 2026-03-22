@@ -1,74 +1,84 @@
-// import { NextFunction, Request, Response } from "express";
-// import { Types } from "mongoose";
-// import jwt from "jsonwebtoken";
-// import { jwt_secret } from "../config/system.variable";
-// import { userModel } from "../models/user.model";
-// import { adminModel } from "../models/admin.model";
-// import { restaurantModel } from "../models/restaurant.model";
+import { NextFunction, Request, Response } from "express";
+import { Types } from "mongoose";
+import jwt from "jsonwebtoken";
+import { jwt_refresh_token, jwt_secret } from "../config/system.variable";
+import { userModel } from "../models/users.model";
+import { string } from "joi";
 
-// export interface IRequest extends Request {
-//   user: {
-//     id: Types.ObjectId;
-//     email: string;
-//     is_verified?: boolean;
-//     role: string;
-//   };
-// }
+export interface IRequest extends Request {
+  user: {
+    id: Types.ObjectId;
+    email: string;
+    is_verified?: boolean;
+    userType: string;
+  };
+}
+export interface IRefreshToken extends Request {
+  refreshToken: string;
+  user: {
+    id: Types.ObjectId;
+    email: string;
+    is_verified?: boolean;
+    userType: string;
+  };
+}
 
-// export const authMiddleware = (
-//   req: IRequest,
-//   res: Response,
-//   next: NextFunction
-// ): any => {
-//   const authHeader = req.headers.authorization;
-//   const token = authHeader?.split("Bearer ")[1];
-//   if (!token) return res.sendStatus(401);
+// export const invalidTokens: string[] = [];
+export const authMiddleware = (
+  req: IRequest,
+  res: Response,
+  next: NextFunction,
+): any => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split("Bearer ")[1];
+  if (!token) return res.sendStatus(401);
+  // if (invalidTokens.includes(token))
+  //   return res.status(403).json({
+  //     success: false,
+  //     message: "forbideen",
+    // });
+  jwt.verify(token, jwt_secret, async (err, data: any) => {
+    if (err) {
+      return res.sendStatus(401);
+    }
+    const user = await userModel.findById(new Types.ObjectId(data.userId));
+    console.log(data);
+    if (!user) return res.sendStatus(401);
+    req.user = {
+      id: user._id,
+      email: user.email as string,
+      is_verified: user.is_verified,
+      userType: user.userType as string,
+    };
+    next();
+  });
+};
 
-//   jwt.verify(token, jwt_secret, async (err, data: any) => {
-//     if (err) {
-//       return res.sendStatus(401);
-//     }
-//     const user = await userModel.findById(new Types.ObjectId(data.userId));
-//     console.log(data);
-//     if (!user) return res.sendStatus(401);
-//     req.user = {
-//       email: user.email as string,
-//       id: user._id,
-//       is_verified: user.is_verified,
-//       role: user.role as string,
-//     };
-//     next();
-//   });
-// };
+export const authRefreshMiddleware = (
+  req: IRefreshToken,
+  res: Response,
+  next: NextFunction,
+): any => {
+  const refreshAuthHeader = req.headers.authorization;
 
-// export const customerMiddleware = (
-//   req: IRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const user = req.user;
-//   if (!user) return res.sendStatus(403);
-//   if (user.role !== "customer") {
-//     return res
-//       .status(403)
-//       .json({ payload: "You are not authorized to access this resources" });
-//   }
-//   next();
-// };
+  const oldToken = refreshAuthHeader?.split("Bearer ")[1]; // Bearer token
+  // const refreshToken = refreshAuthHeader?.split("Bearer ")[1];
+  if (!oldToken) return res.sendStatus(401);
 
-// export const restaurantMiddleware = (
-//   req: IRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const user = req.user;
-
-//   if (!user) return res.sendStatus(403);
-//   if (user.role !== "restaurant") {
-//     return res.status(403).json({
-//       success: false,
-//       payload: "You are not authorized to access this resources",
-//     });
-//   }
-//   next();
-// };
+  jwt.verify(oldToken, jwt_refresh_token, async (err, data: any) => {
+    if (err) {
+      return res.sendStatus(401);
+    }
+    const user = await userModel.findById(new Types.ObjectId(data.userId));
+    console.log(data);
+    if (!user) return res.sendStatus(401);
+    req.user = {
+      id: user._id,
+      email: user.email as string,
+      is_verified: user.is_verified,
+      userType: user.userType as string,
+    };
+    req.refreshToken = oldToken;
+    next();
+  });
+};
