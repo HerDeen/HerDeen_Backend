@@ -10,7 +10,6 @@ This is the backend service for the HerDeen application, an Islamic lifestyle an
 - Node.js (v18+)
 - MongoDB
 - Redis (for BullMQ job queues)
-- pnpm (recommended package manager)
 
 ### 2. Installation
 Install the project dependencies:
