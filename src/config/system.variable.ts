@@ -20,5 +20,5 @@ export const admin_refresh_exp = process.env.ADMIN_JWT_REFRESH_EXP as string;
 export const my_algorithm = process.env.ALGORITHM;
 export const encrypt_password = process.env.ENCRYPT_PASSWORD as string;
 export const API_KEY = process.env.API_KEY as string;
-export const open_router_key = process.env.OPEN_ROUTER_KEY;
+export const gemini_api_key = process.env.GEMINI_API_KEY;
 export const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY as string;

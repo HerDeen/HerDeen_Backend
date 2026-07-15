@@ -2,17 +2,13 @@ import OpenAI from "openai";
 import { newCustomError } from "../middleware/errorHandler";
 import { userModel } from "../models/users.model";
 import { Types } from "mongoose";
-import { open_router_key } from "../config/system.variable";
+import { gemini_api_key } from "../config/system.variable";
 import { DailyPlanInput, IDailyPlan } from "../interface/daily.plan.interface";
 import { dailyPlanModel } from "../models/dailyPlan.model";
 
 const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: open_router_key,
-  defaultHeaders: {
-    "HTTP-Referer": "<YOUR_SITE_URL>", // Optional. Site URL for rankings on openrouter.ai.
-    "X-Title": "<YOUR_SITE_NAME>", // Optional. Site title for rankings on openrouter.ai.
-  },
+  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  apiKey: gemini_api_key,
 });
 
 export class AiPlan {
@@ -64,13 +60,13 @@ Make it practical, balanced, and realistic.
     `;
 
       const completion = await openai.chat.completions.create({
-        model: "openai/gpt-4o-mini",
+        model: "gemini-flash-latest",
         messages: [
           { role: "system", content: "You are a helpful Islamic planner." },
           { role: "user", content: prompt },
         ],
         temperature: 0.6,
-        max_completion_tokens: 600,
+        max_tokens: 600,
       });
       return {
         response: completion.choices[0].message.content,
