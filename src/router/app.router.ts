@@ -12,6 +12,8 @@ import {
   superAdminMiddleware,
 } from "../middleware/adminAuthMiddleware";
 import { DailyPlanServices } from "../service/dailyPlan.services";
+import { PrayerSettingController } from "../controller/prayerSettings.controllers";
+import { PrayerTimesController } from "../controller/prayerTime.controllers";
 
 const router = express.Router();
 //*********************|| ADMIN MANAGEMENT ||*********************************//
@@ -55,7 +57,7 @@ router.patch(
   AuthControllers.userAiData,
 );
 
-//**********************************|| DAILY PLSN MGMT ||***************************************//
+//**********************************|| DAILY PLAN MGMT ||***************************************//
 router.post(
   "/planner/generate",
   authMiddleware as any,
@@ -100,6 +102,25 @@ router.delete(
   DailyPlanController.removeTask,
 );
 router.post("/clear-cache", DailyPlanController.clearCahcePlan);
+
+//************************************||PRAYER MGMT.  ||******************************//
+router.patch(
+  "/prayer",
+  authMiddleware as any,
+  PrayerSettingController.updatePrayerSetting,
+);
+
+router.get(
+  "/islamic/prayer-times",
+  authMiddleware as any,
+  PrayerTimesController.prayerTimes,
+);
+//TEST FOR PRAYER REMINDER
+// router.post(
+//   "/islamic/prayer-reminder",
+//   authMiddleware as any,
+//   PrayerTimesController.prayerReminder,
+// );
 //**************************************|| QURAN MANAGEMENT ||**************************//
 // router.get("/surah/:surahNumber", QuranContoller.fetchSurah);
 // router.get("/quran/:edition", QuranContoller.getEdition);

@@ -63,6 +63,10 @@ export const userSchema = new Schema(
       country: String,
       postalCode: String,
     },
+    fcmToken: {
+      type: String,
+      default: null,
+    },
     is_verified: { type: Boolean, default: false },
     is_kyc_verified: { type: Boolean, default: false },
   },

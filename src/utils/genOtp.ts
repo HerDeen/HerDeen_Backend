@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { otpModel } from "../models/otp.model";
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
+
 
 export const genOtp = async (email: string) => {
   const otp = crypto.randomInt(100000, 999999);
@@ -17,12 +17,3 @@ export const genOtp = async (email: string) => {
 
 
 
-function assignIds(tasks: any[]): any[] {
-  return tasks.map(task => ({
-    _id: new mongoose.Types.ObjectId(),
-    ...task,
-    subtasks: task.subtasks
-      ? assignIds(task.subtasks)
-      : []
-  }));
-}

@@ -16,3 +16,7 @@ export const mongoConnection = async () => {
 export const dailyPlanQueue = new Queue("daily-plan-queue", {
   connection: createRedisConnection(),
 });
+
+export const prayerReminderQueue = new Queue("prayer-reminder-queue", {
+  connection: createRedisConnection(),
+});

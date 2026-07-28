@@ -6,6 +6,7 @@ import {
   upstash_redis_rest_url,
 } from "../config/system.variable";
 
+//REDIS/MEMURAI FOR WORKER
 export const createRedisConnection = () => {
   return new IORedis({
     host: "127.0.0.1",
@@ -14,6 +15,7 @@ export const createRedisConnection = () => {
   });
 };
 
+//REDIS FOR CACHING
 export const redis = new Redis({
   url: upstash_redis_rest_url,
   token: upstash_redis_rest_token,

@@ -6,3 +6,5 @@ src/utils/quran.ts
 src/controller/quran.controllers.ts
 src/interface/quran.interface.ts
 src/service/quran.services.ts
+src\models\aiGenerationLog.model.ts
+herdeen-01-firebase-adminsdk-fbsvc-b8bcdaedf4.json

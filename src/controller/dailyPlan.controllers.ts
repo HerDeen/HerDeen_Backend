@@ -3,7 +3,6 @@ import { asyncWrapper } from "../middleware/asyncWrapper";
 import { IRequest } from "../middleware/authMiddleware";
 import { DailyPlanServices } from "../service/dailyPlan.services";
 import { resetCahce } from "../config/redis.config";
-import { analyzeComplexity, decomposeTask } from "../service/taskIntellisence";
 import mongoose from "mongoose";
 
 export class DailyPlanController {
