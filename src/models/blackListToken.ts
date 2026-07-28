@@ -1,11 +1,11 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 const blacklistSchema = new Schema({
-  token: { type: String, required: true, index: true },
   userId: {
     type: Types.ObjectId,
     ref: "User",
   },
+  token: { type: String, required: true, index: true },
   revokedAt: { type: Date, default: Date.now, expires: 0 },
 });
 

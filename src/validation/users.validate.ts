@@ -84,3 +84,7 @@ export const userAiValid = Joi.object({
     )
     .min(1),
 });
+
+export const planDateValidate = Joi.object({
+  date: Joi.string().valid("YYYY-MM-DD").trim(),
+});

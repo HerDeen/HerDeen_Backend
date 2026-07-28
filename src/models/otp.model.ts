@@ -6,8 +6,6 @@ const otpSchema = new Schema(
     entityType: { type: String, enum: ["Admin", "User"], required: false },
     email: { type: String, require: true },
     otp: { type: String, require: true },
-    createdAt: { type: Date, date: Date.now },
-    updatedAt: { type: Date, date: Date.now },
     expiresAt: {
       type: Date,
       require: true,

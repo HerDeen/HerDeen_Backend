@@ -10,7 +10,7 @@ import {
   resetValid,
   userAiValid,
 } from "../validation/users.validate";
-import crypto from "crypto";
+import crypto, { createHash, hash } from "crypto";
 import { otpModel } from "../models/otp.model";
 
 import { otpTemplate } from "../utils/otpTemp";
@@ -137,6 +137,7 @@ export class UserServices {
         email: email,
         subject: "Login Attempt",
         emailInfo: {
+          name: userValid.firstName,
           ipAddress: ipAddress,
           userAgent: userAgent,
         },
@@ -186,7 +187,11 @@ export class UserServices {
       userType: user?.userType,
     };
     // check if token is blacklisted
-    const blacklist = await blackList.findOne({ token: oldToken });
+    const hashToken = crypto
+      .createHash("sha256")
+      .update(oldToken)
+      .digest("hex");
+    const blacklist = await blackList.findOne({ token: hashToken });
     if (blacklist) throw newCustomError("blacklisted Token", 404);
     //create new access token
     let jwtkey = Jwt.sign(payload, jwt_secret, { expiresIn: jwt_exp as any });
@@ -198,19 +203,21 @@ export class UserServices {
     if (!jwtKeyRefresh)
       throw newCustomError("Unable to refresh at this moment", 401);
     //  Blacklist old token
-    const encrypt = await Secure.encrypt(oldToken, encrypt_password);
     await blackList.create({
       userId,
-      token: encrypt.encrypted,
+      token: hashToken,
       revokedAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // match expiry
     });
     const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
-    await tokenModel.findOneAndUpdate({
-      userId: userId,
-      token: encryptToken.encrypted,
-      iv: encryptToken.iv,
-      authTag: encryptToken.authTag,
-    });
+    await tokenModel.findOneAndUpdate(
+      { userId },
+      {
+        token: encryptToken.encrypted,
+        iv: encryptToken.iv,
+        authTag: encryptToken.authTag,
+      },
+      { set: true, upsert: true },
+    );
     return {
       messsage: "refresh successful",
       authKey: jwtkey,

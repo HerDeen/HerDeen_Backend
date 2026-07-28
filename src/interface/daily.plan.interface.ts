@@ -1,24 +1,35 @@
 // models/DailyPlan.ts
-import mongoose, { Types, Document } from "mongoose";
+import mongoose, { Types } from "mongoose";
+
+// export interface subTask {
+//   id: string;
+//   title: string;
+//   description?: string | null;
+//   time?: string | null; // e.g., "08:00"
+//   completed?: boolean;
+// }
 
 export interface Task {
-  id: string;
   title: string;
-  description?: string;
-  time?: string; // e.g., "08:00"
+  description?: string | null;
+  time?: string | null; // e.g., "08:00"
   completed?: boolean;
 }
 
+// export interface TaskWithId extends Omit<Task, "subtasks"> {
+//   _id: mongoose.Types.ObjectId;
+//   subTask?: TaskWithId[] | undefined;
+// }
+
 export interface UserInputs {
-  tasks?: string[];
-  priorities?: string[];
-  spiritualFocus?: string[];
-  notes?: string;
+  tasks: string[];
+  priorities: string[];
+  spiritualFocus: string[];
+  notes: string;
 }
 
 export interface IDailyPlan {
   userId: Types.ObjectId;
-  date: Date;
   userInputs: UserInputs;
   generatedPlan?: any;
   status: "pending" | "generating" | "completed" | "failed";
@@ -41,7 +52,7 @@ export interface DailyPlanInput {
     country?: string;
   };
   userInputs?: {
-    tasks?: string[];
+    tasks?: Task[];
     priorities?: string[];
     spiritualFocus?: string[];
     notes?: string;

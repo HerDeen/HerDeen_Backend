@@ -17,7 +17,7 @@ export const handleCustomError = (
   error: Error,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   if (error instanceof CustomError) {
     res.status(error.statusCode).json({
@@ -29,7 +29,7 @@ export const handleCustomError = (
     console.log("🔥 INTERNAL ERROR:", error);
     res.status(500).json({
       success: false,
-      payload: "Something went wrong",
+      payload: error.message || "Something went wrong", //"someting went wrong" for dev
       timeStamp: new Date(),
     });
   }

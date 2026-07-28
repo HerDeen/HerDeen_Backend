@@ -11,6 +11,7 @@ import {
   adminAuthMiddleware,
   superAdminMiddleware,
 } from "../middleware/adminAuthMiddleware";
+import { DailyPlanServices } from "../service/dailyPlan.services";
 
 const router = express.Router();
 //*********************|| ADMIN MANAGEMENT ||*********************************//
@@ -55,8 +56,50 @@ router.patch(
 );
 
 //**********************************|| DAILY PLSN MGMT ||***************************************//
-router.post("/planner", authMiddleware as any, DailyPlanController.myDailyPlan);
+router.post(
+  "/planner/generate",
+  authMiddleware as any,
+  DailyPlanController.myDailyPlan,
+);
+router.get(
+  "/planner/daily/:date",
+  authMiddleware as any,
+  DailyPlanController.getPlan,
+);
+router.get(
+  "/planner/history",
+  authMiddleware as any,
+  DailyPlanController.planHistory,
+);
+router.put(
+  "/planner/completed/:task",
+  authMiddleware as any,
+  DailyPlanController.taskCompleted,
+);
 
+router.put(
+  "/planner/edit/:taskId",
+  authMiddleware as any,
+  DailyPlanController.editTask,
+);
+
+router.get(
+  "/planner/completed/tasks",
+  authMiddleware as any,
+  DailyPlanController.getCompletedTasks,
+);
+
+router.post(
+  "/planner/add",
+  authMiddleware as any,
+  DailyPlanController.addNewTask,
+);
+router.delete(
+  "/planner/:taskId",
+  authMiddleware as any,
+  DailyPlanController.removeTask,
+);
+router.post("/clear-cache", DailyPlanController.clearCahcePlan);
 //**************************************|| QURAN MANAGEMENT ||**************************//
 // router.get("/surah/:surahNumber", QuranContoller.fetchSurah);
 // router.get("/quran/:edition", QuranContoller.getEdition);
