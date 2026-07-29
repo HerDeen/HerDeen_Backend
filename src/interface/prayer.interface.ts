@@ -9,3 +9,20 @@ export interface IUpdatePrayerSettings {
   calculationMethod?: string;
   madhab?: string;
 }
+
+export interface IIbadahTracker {
+  salah: {
+    fajr: boolean;
+    dhuhr: boolean;
+    asr: boolean;
+    maghrib: boolean;
+    isha: boolean;
+  };
+  quran: {
+    pagesRead: number;
+  };
+
+  adhkaar: {
+    completed: boolean;
+  };
+}

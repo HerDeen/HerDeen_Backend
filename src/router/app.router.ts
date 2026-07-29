@@ -14,6 +14,8 @@ import {
 import { DailyPlanServices } from "../service/dailyPlan.services";
 import { PrayerSettingController } from "../controller/prayerSettings.controllers";
 import { PrayerTimesController } from "../controller/prayerTime.controllers";
+import { IbadahTrackerController } from "../controller/ibadahTracker.controllers";
+import { MenstrualLogController } from "../controller/menstrualLog.controllers";
 
 const router = express.Router();
 //*********************|| ADMIN MANAGEMENT ||*********************************//
@@ -114,6 +116,47 @@ router.get(
   "/islamic/prayer-times",
   authMiddleware as any,
   PrayerTimesController.prayerTimes,
+);
+// *********************\\ IBADAH TRACKER\\********************//
+router.get(
+  "/tracker/today",
+  authMiddleware as any,
+  IbadahTrackerController.getTodayTracker,
+);
+
+router.patch(
+  "/tracker/toggle-prayer",
+  authMiddleware as any,
+  IbadahTrackerController.togglePrayer,
+);
+
+router.patch(
+  "/tracker/quran",
+  authMiddleware as any,
+  IbadahTrackerController.updateQuranPages,
+);
+
+router.patch(
+  "/tracker/adhkaar",
+  authMiddleware as any,
+  IbadahTrackerController.toggleAdhkaar,
+);
+//*********************************||MENSTRUAL LOG MGMT||******************************//
+router.post(
+  "/menstrual-cycle",
+  authMiddleware as any,
+  MenstrualLogController.ceateMenstrualLog,
+);
+
+router.patch(
+  "/menstrual-cycle",
+  authMiddleware as any,
+  MenstrualLogController.updateMentsrual,
+);
+router.get(
+  "/menstrual-cycle",
+  authMiddleware as any,
+  MenstrualLogController.getMenstrualLog,
 );
 //TEST FOR PRAYER REMINDER
 // router.post(
