@@ -16,6 +16,7 @@ import { PrayerSettingController } from "../controller/prayerSettings.controller
 import { PrayerTimesController } from "../controller/prayerTime.controllers";
 import { IbadahTrackerController } from "../controller/ibadahTracker.controllers";
 import { MenstrualLogController } from "../controller/menstrualLog.controllers";
+import { DailySpiritualController } from "../controller/dailyContent.controllers";
 
 const router = express.Router();
 //*********************|| ADMIN MANAGEMENT ||*********************************//
@@ -158,6 +159,18 @@ router.get(
   authMiddleware as any,
   MenstrualLogController.getMenstrualLog,
 );
+//************************||DAILY SPIRITUAL CONTENT||************************ *//
+router.post("/daily-content", DailySpiritualController.createContent);
+router.patch(
+  "/daily-content/:contentId",
+  DailySpiritualController.updateContent,
+);
+router.delete(
+  "/daily-content/:contentId",
+  DailySpiritualController.deleteContent,
+);
+router.get("/daily-content", DailySpiritualController.getTodayContent);
+
 //TEST FOR PRAYER REMINDER
 // router.post(
 //   "/islamic/prayer-reminder",

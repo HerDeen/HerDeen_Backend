@@ -32,7 +32,6 @@ export class AiPlan {
       if (!input) throw newCustomError("no user found", 404);
       const dailyPlan = await dailyPlanModel.findOne({ userId });
       if (!dailyPlan) throw newCustomError("No plan found", 404);
-      // const userInputs = dailyPlan.userInputs;
 
       const prompt = `
         You are an Islamic lifestyle and productivity assistant.
@@ -79,12 +78,16 @@ ADDITIONAL REQUIREMENTS:
 `;
 
       const completion = await openai.chat.completions.create({
-        model: "gemini-flash-latest",
+        model: "gemini-3.5-flash-lite",
         messages: [
           {
             role: "system",
-            content: `You are a helpful Islamic planner and a scheduling system. Return ONLY valid JSON.
-            Do not wrap the response in markdown.
+            content: `You are a helpful Islamic planner and a scheduling system. Return ONLY a valid JSON array.
+           The first character must be [
+            The last character must be ]
+            No markdown.
+            No explanations.
+            No comments.
             Do not use \`\`\`json.
             Do not add explanations.
             Do not generate IDs.
@@ -108,18 +111,14 @@ Return an array of tasks in this format:
   {
   
     "title": "Task title",
-    "time": "h:mm AM/PM",
-    "type": "worship",
-    "completed": false,
-    "description": "Task description",
-  
+   
   }
 ] Before responding, ensure all times are valid and corrected if needed.`,
           },
           { role: "user", content: prompt },
         ],
         temperature: 0.3,
-        max_completion_tokens: 1200,
+        max_tokens: 1200,
       });
 
       const content = completion.choices[0].message.content;
@@ -127,8 +126,26 @@ Return an array of tasks in this format:
       if (!content) {
         throw newCustomError("No response from AI", 422);
       }
+      // const finishReason = completion.choices[0].finish_reason;
 
-      // console.log(" ai response", content);
+      // if (finishReason !== "stop") {
+      //   console.error("Gemini finish reason:", finishReason);
+      //   console.error("Partial response:", content);
+
+      //   throw newCustomError(
+      //     `AI response was incomplete (${finishReason})`,
+      //     500,
+      //   );
+      // }
+      // const cleaned = content.trim();
+
+      // if (!cleaned.startsWith("[") && !cleaned.startsWith("{")) {
+      //   console.error("AI returned non-JSON:", cleaned);
+
+      //   throw newCustomError("AI did not return JSON", 500);
+      // }
+
+      // const parsed = JSON.parse(cleaned);
       let parsedTasks;
       parsedTasks = JSON.parse(content);
       if (!Array.isArray(parsedTasks)) {

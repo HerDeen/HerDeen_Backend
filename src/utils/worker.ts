@@ -16,6 +16,8 @@ import { getDuePrayerTime } from "./adhan/prayerTimesFormat";
 import { NotificationService } from "../service/notifications.services";
 import "../utils/adhan/prayerReminder-cron";
 import { error } from "node:console";
+import { MenstrualLogService } from "../service/menstrualCycle.services";
+import { menstrualLogModel } from "../models/menstrualCycle";
 
 mongoose.connect(process.env.DB_CONNECTION_URI as string);
 
@@ -147,6 +149,15 @@ const prayerReminderWorker = new Worker(
     const settings = await PrayerTimeService.getPrayerSetting(userId);
     const currentTime = new Date();
     const result = await PrayerTimeService.calculatePrayerTime(settings);
+    //check Menstrual Flow status
+    const menstrualLog = await menstrualLogModel.findOne({ userId });
+    const status = await MenstrualLogService.getCurrentMenstrualStatus(userId);
+    if (
+      status.isInFlow &&
+      menstrualLog?.reminderPreference?.disableIbadahReminders
+    ) {
+      return;
+    }
     const duePrayerTimes = getDuePrayerTime(
       result.prayerTimes,
       settings.minutesBefore,

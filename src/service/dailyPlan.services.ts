@@ -108,10 +108,8 @@ export class DailyPlanServices {
     return tasks;
   };
   static planHistory = async (userId: Types.ObjectId) => {
-    const plan = await dailyPlanModel
-      .find({ userId })
-      .select("-rawAiOutput -__v -userId -userInputs");
-    if (!plan) throw newCustomError("No plan found", 404);
+    const plan = await dailyPlanModel.find({ userId }, { createdAt: 1 });
+    if (plan.length === 0) throw newCustomError("No plan found", 404);
     return plan;
   };
 
