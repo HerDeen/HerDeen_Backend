@@ -18,6 +18,7 @@ import "../utils/adhan/prayerReminder-cron";
 import { error } from "node:console";
 import { MenstrualLogService } from "../service/menstrualCycle.services";
 import { menstrualLogModel } from "../models/menstrualCycle";
+import http from "http";
 
 mongoose.connect(process.env.DB_CONNECTION_URI as string);
 
@@ -198,4 +199,19 @@ prayerReminderWorker.on("completed", (job) => {
 });
 prayerReminderWorker.on("failed", (job, err) => {
   console.error(`Reminder failed`, err);
+});
+
+const PORT = Number(process.env.PORT) || 2000;
+const server = http.createServer((req, res) => {
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+  res.writeHead(404);
+  res.end();
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Worker health server running on port ${PORT}`);
 });
