@@ -43,6 +43,7 @@ export class DailyPlanServices {
         };
       }
 
+      console.log("safeuserinputs", plan);
       return {
         title: t.title,
         completed: t.completed ?? false,

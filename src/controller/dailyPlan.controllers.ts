@@ -10,8 +10,6 @@ export class DailyPlanController {
     try {
       const userId = req.user.id;
       const plan = req.body;
-      // const profile = analyzeComplexity(plan);
-      // const subTask = decomposeTask(profile);
       const response = await DailyPlanServices.myPlan(userId, plan);
       res.status(201).json({ success: true, payload: response });
     } catch (err: any) {
@@ -54,7 +52,6 @@ export class DailyPlanController {
   static editTask = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
     const { taskId } = req.params;
-    // const ObjectId = new mongoose.Types.ObjectId(taskId)
     const { update } = req.body;
     const response = await DailyPlanServices.editTask(userId, taskId, update);
     res.status(201).json({ success: true, payload: response });

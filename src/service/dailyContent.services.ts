@@ -54,9 +54,9 @@ export class DailySpiritualService {
     const diff = today.getTime() - startOfTheYear.getTime();
     const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
     const index = dayOfYear % contents.length;
-    console.log("Day of year:", dayOfYear);
-    console.log("Index:", index);
-    console.log("Title:", contents[index].title);
+    // console.log("Day of year:", dayOfYear);
+    // console.log("Index:", index);
+    // console.log("Title:", contents[index].title);
     return {
       contents: contents[index],
     };
