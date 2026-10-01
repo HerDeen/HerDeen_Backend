@@ -7,11 +7,17 @@ import {
 } from "../config/system.variable";
 
 //REDIS/MEMURAI FOR WORKER
+// export const createRedisConnection = () => {
+//   return new IORedis({
+//     host: "127.0.0.1",
+//     port: 6379,
+//     maxRetriesPerRequest: null, //
+//   });
+// };
+//prod and dev
 export const createRedisConnection = () => {
-  return new IORedis({
-    host: "127.0.0.1",
-    port: 6379,
-    maxRetriesPerRequest: null, //
+  return new IORedis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
   });
 };
 

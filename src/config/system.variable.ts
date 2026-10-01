@@ -19,6 +19,7 @@ export const admin_refresh_exp = process.env.ADMIN_JWT_REFRESH_EXP as string;
 export const upstash_redis_rest_url = process.env
   .UPSTASH_REDIS_REST_URL as string;
 export const upstash_redis_rest_token = process.env.UPSTASH_REDIS_REST_TOKEN;
+export const redis_url = process.env.REDIS_URL;
 export const my_algorithm = process.env.ALGORITHM;
 export const encrypt_password = process.env.ENCRYPT_PASSWORD as string;
 export const API_KEY = process.env.API_KEY as string;
