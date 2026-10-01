@@ -67,6 +67,7 @@ export class DailyPlanServices {
     // console.log("first:", safeUserInputs);
     const today = getUserToday(timezone);
     try {
+      console.log("1. before Mongo Created");
       const newPlan = await dailyPlanModel.create({
         userId,
         date: today,
@@ -74,7 +75,8 @@ export class DailyPlanServices {
         status: "generating",
       });
 
-      // console.log("second", newPlan);
+      console.log("Mongo Created", newPlan._id);
+      console.log("3. Before queue add");
       await dailyPlanQueue.add(
         "daily-plan-queue",
         { dailyPlanId: newPlan._id.toString() },
@@ -84,7 +86,8 @@ export class DailyPlanServices {
           removeOnComplete: true,
         },
       );
-
+console.log("4. Queue Added");
+      console.log("Returning Response");
       return newPlan;
     } catch (err) {
       // console.error("CREATE PLAN ERROR:", err);
