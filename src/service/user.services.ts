@@ -160,24 +160,22 @@ export class UserServices {
 
   static logout = async (userId: Types.ObjectId, oldToken: string) => {
     const user = await userModel.findById(userId);
-    const payload = {
-      userId: user?._id,
-      userType: user?.userType,
-    };
 
-    const blacklistToken = await tokenModel.findOneAndUpdate(
-      { userId },
-      { revoked: true },
-      { new: true },
-    );
-    if (!blacklistToken) throw newCustomError("Unable to blacklist Token", 422);
-    const encrypt = await Secure.encrypt(oldToken, encrypt_password);
-    await blackList.create({
-      token: encrypt.encrypted,
+    //  Blacklist old token
+    const hashToken = crypto
+      .createHash("sha256")
+      .update(oldToken)
+      .digest("hex");
+    const blackListToken = await blackList.create({
       userId,
+      token: hashToken,
       revokedAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // match expiry
     });
-    return "Logout Succcessfuly";
+    if (!blackListToken) {
+      console.log("token blacklist", blackListToken);
+    }
+
+    return "Logout Successfully";
   };
 
   static refreshToken = async (userId: Types.ObjectId, oldToken: string) => {
@@ -203,6 +201,7 @@ export class UserServices {
     if (!jwtKeyRefresh)
       throw newCustomError("Unable to refresh at this moment", 401);
     //  Blacklist old token
+
     await blackList.create({
       userId,
       token: hashToken,

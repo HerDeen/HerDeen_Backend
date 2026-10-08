@@ -23,7 +23,6 @@ export interface IRefreshToken extends Request {
   };
 }
 
-// export const invalidTokens: string[] = [];
 export const authMiddleware = (
   req: IRequest,
   res: Response,
@@ -32,17 +31,12 @@ export const authMiddleware = (
   const authHeader = req.headers.authorization;
   const token = authHeader?.split("Bearer ")[1];
   if (!token) return res.sendStatus(401);
-  // if (invalidTokens.includes(token))
-  //   return res.status(403).json({
-  //     success: false,
-  //     message: "forbideen",
-    // });
   jwt.verify(token, jwt_secret, async (err, data: any) => {
     if (err) {
       return res.sendStatus(401);
     }
     const user = await userModel.findById(new Types.ObjectId(data.userId));
-    console.log(data);
+    // console.log(data);
     if (!user) return res.sendStatus(401);
     req.user = {
       id: user._id,
@@ -70,7 +64,7 @@ export const authRefreshMiddleware = (
       return res.sendStatus(401);
     }
     const user = await userModel.findById(new Types.ObjectId(data.userId));
-    console.log(data);
+    // console.log(data);
     if (!user) return res.sendStatus(401);
     req.user = {
       id: user._id,
