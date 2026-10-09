@@ -40,7 +40,7 @@ const worker = new Worker(
           completed: false,
           description: null,
           time: null,
-          subTask: t,
+          // subTask: t,
         };
       }
 
@@ -50,7 +50,7 @@ const worker = new Worker(
         completed: t.completed ?? false,
         description: t.description ?? null,
         time: t.time ?? null,
-        subTask: t.subTask,
+        // subTask: t.subTask,
       };
     });
     if (!inputs.length) throw newCustomError("inputs are empty", 422);
@@ -75,12 +75,12 @@ const worker = new Worker(
       .digest("hex");
     const cacheKey = `globalPlan:${today}:${hash}`;
     const cached = await redis.get(cacheKey);
-    const parsedCached = cached ? JSON.stringify(cached) : null;
+    // const parsedCached = cached ? JSON.stringify(cached) : null;
 
     //hit cached for similar plan
     if (cached) {
-      const update = await dailyPlanModel.findOneAndUpdate(
-        { userId: user._id },
+      const update = await dailyPlanModel.findByIdAndUpdate(
+        dailyPlanId,
         {
           $set: {
             date: today,
@@ -103,11 +103,8 @@ const worker = new Worker(
         ex: 86400,
       });
       //upate Ai response
-      // console.log("first", tasks);
-      const newPlan = await dailyPlanModel.findOneAndUpdate(
-        {
-          userId: user._id,
-        },
+      const newPlan = await dailyPlanModel.findByIdAndUpdate(
+        dailyPlanId,
 
         {
           $set: {
@@ -116,7 +113,7 @@ const worker = new Worker(
             status: "completed",
           },
         },
-        { new: true, upsert: true },
+        { new: true },
       );
       return newPlan;
     }
@@ -135,7 +132,7 @@ worker.on("failed", (job, err) => {
 });
 
 //prayer Reminder worker
-console.log("Prayer Reminder started");
+// console.log("Prayer Reminder started");
 const prayerReminderWorker = new Worker(
   "prayer-reminder-queue",
   async (Job) => {
@@ -184,7 +181,7 @@ const prayerReminderWorker = new Worker(
       // await redis.set(key, "sent", { ex: 86400 });
       const value = await redis.get(key);
 
-      console.log(key, value);
+      // console.log(key, value);
     } catch (error) {
       console.error("FCM send failed", error);
     }
