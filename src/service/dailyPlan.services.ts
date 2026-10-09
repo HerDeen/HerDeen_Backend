@@ -64,7 +64,6 @@ export class DailyPlanServices {
       return moment().tz(timezone).format("YYYY-MM-DD");
     };
 
-    // console.log("first:", safeUserInputs);
     const today = getUserToday(timezone);
     try {
       const newPlan = await dailyPlanModel.create({
@@ -73,7 +72,6 @@ export class DailyPlanServices {
         userInputs: safeUserInputs,
         status: "generating",
       });
-
       await dailyPlanQueue.add(
         "daily-plan-queue",
         { dailyPlanId: newPlan._id.toString() },
