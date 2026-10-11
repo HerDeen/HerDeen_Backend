@@ -18,7 +18,9 @@ export class DailyPlanController {
           Message:
             "Daily limit reached. you can only generate one plan per day",
         });
+        return;
       }
+      next(err);
     }
   });
 
