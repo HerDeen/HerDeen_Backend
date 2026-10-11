@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { asyncWrapper } from "../middleware/asyncWrapper";
 import { IRequest } from "../middleware/authMiddleware";
 import { DailyPlanServices } from "../service/dailyPlan.services";
@@ -6,21 +6,25 @@ import { resetCahce } from "../config/redis.config";
 import mongoose from "mongoose";
 
 export class DailyPlanController {
-  static myDailyPlan = asyncWrapper(async (req: IRequest, res: Response) => {
-    try {
-      const userId = req.user.id;
-      const plan = req.body;
-      const response = await DailyPlanServices.myPlan(userId, plan);
-      res.status(201).json({ success: true, payload: response });
-    } catch (err: any) {
-      if (err.code === 11000) {
-        res.status(429).json({
-          Message:
-            "Daily limit reached. you can only generate one plan per day",
-        });
+  static myDailyPlan = asyncWrapper(
+    async (req: IRequest, res: Response, next: NextFunction) => {
+      try {
+        const userId = req.user.id;
+        const plan = req.body;
+        const response = await DailyPlanServices.myPlan(userId, plan);
+        res.status(201).json({ success: true, payload: response });
+      } catch (err: any) {
+        if (err.code === 11000) {
+          res.status(429).json({
+            Message:
+              "Daily limit reached. you can only generate one plan per day",
+          });
+          return;
+        }
+        next(err);
       }
-    }
-  });
+    },
+  );
 
   static getPlan = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;

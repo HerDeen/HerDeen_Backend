@@ -26,8 +26,10 @@ export class DailyPlanServices {
       throw newCustomError("Please select your life stage", 422);
     }
 
-    if (user.lifeStage === null)
+    // console.log("user is", user.lifeStage === null);
+    if (user.lifeStage === null) {
       throw newCustomError("Please select your current life Stage", 422);
+    }
 
     if (!user.deenGoals || user.deenGoals.length === 0) {
       throw newCustomError("Please select at least one Deen goal", 422);
@@ -72,6 +74,7 @@ export class DailyPlanServices {
         userInputs: safeUserInputs,
         status: "generating",
       });
+
       await dailyPlanQueue.add(
         "daily-plan-queue",
         { dailyPlanId: newPlan._id.toString() },
