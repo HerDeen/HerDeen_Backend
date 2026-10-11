@@ -9,7 +9,7 @@ import { handleCustomError } from "./middleware/errorHandler";
 import { limiter } from "./utils/rate.limit";
 
 const app = express();
-
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(limiter);
 app.use("/api/v1", router);
