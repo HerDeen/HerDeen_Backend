@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 import { asyncWrapper } from "../middleware/asyncWrapper";
 import { IRequest } from "../middleware/authMiddleware";
 import { DailyPlanServices } from "../service/dailyPlan.services";
