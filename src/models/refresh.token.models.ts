@@ -6,7 +6,11 @@ const tokenSchema = new Schema(
     token: { type: String, required: true },
     iv: { type: String, required: true },
     authTag: { type: String, required: true },
-    expiresAt: Date,
+    expiresAt: {
+      type: Date,
+      required: true,
+      index: { expires: 0 },
+    },
   },
   {
     timestamps: true,

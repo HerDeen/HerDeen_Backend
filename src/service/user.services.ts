@@ -150,6 +150,7 @@ export class UserServices {
       token: encryptToken.encrypted,
       iv: encryptToken.iv,
       authTag: encryptToken.authTag,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
     return {
       message: "Login Successful",
@@ -201,11 +202,12 @@ export class UserServices {
     if (!jwtKeyRefresh)
       throw newCustomError("Unable to refresh at this moment", 401);
     //  Blacklist old token
-
+    const storedToken = await tokenModel.findOne({ token: hashToken });
     await blackList.create({
       userId,
       token: hashToken,
-      revokedAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // match expiry
+      revokedAt: new Date(), // match expiry
+      expiresAt: storedToken?.expiresAt,
     });
     const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
     await tokenModel.findOneAndUpdate(
@@ -214,6 +216,7 @@ export class UserServices {
         token: encryptToken.encrypted,
         iv: encryptToken.iv,
         authTag: encryptToken.authTag,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
       { set: true, upsert: true },
     );

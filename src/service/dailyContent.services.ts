@@ -24,20 +24,28 @@ export class DailySpiritualService {
     return create;
   };
   static updateContent = async (
-    contentId: Types.ObjectId,
+    contentId: string,
     update: IUpdateDailySpiritualContent,
   ) => {
+    if (!/^[a-f\d]{24}$/i.test(contentId)) {
+      throw newCustomError("Invalid content ID", 400);
+    }
     const { error } = updateDailyContentValidation.validate(update);
     if (error) throw newCustomError(error.details[0].message, 400);
     const content = await dailyContentModel.findOneAndUpdate(
-      contentId,
+      new Types.ObjectId(contentId),
       { $set: update },
       { new: true },
     );
+    if (contentId.toString() !== content?.id.toString())
+      throw newCustomError("No record found", 404);
     if (!content) throw newCustomError("Unable to update content", 404);
     return content;
   };
-  static deleteContent = async (contentId: Types.ObjectId) => {
+  static deleteContent = async (contentId: string) => {
+    if (!/^[a-f\d]{24}$/i.test(contentId)) {
+      throw newCustomError("Invalid content ID", 400);
+    }
     const content = await dailyContentModel.findByIdAndDelete(contentId);
     if (!content) throw newCustomError("No content with such Id", 404);
     return "content deleted";
@@ -46,7 +54,6 @@ export class DailySpiritualService {
     const contents = await dailyContentModel
       .find({ active: true })
       .sort({ createdAt: 1 });
-    // console.log("first", contents);
     if (contents.length === 0)
       throw newCustomError("No spiritual content available", 404);
     const today = getToday();
@@ -54,9 +61,6 @@ export class DailySpiritualService {
     const diff = today.getTime() - startOfTheYear.getTime();
     const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
     const index = dayOfYear % contents.length;
-    // console.log("Day of year:", dayOfYear);
-    // console.log("Index:", index);
-    // console.log("Title:", contents[index].title);
     return {
       contents: contents[index],
     };

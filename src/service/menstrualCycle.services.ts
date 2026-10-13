@@ -59,41 +59,61 @@ export class MenstrualLogService {
 
   static isCuurentlyInFlow = async (userId: Types.ObjectId) => {
     const today = startOfDay(new Date());
-    const isLog = await this.getMenstrualLog(userId);
-    if (!isLog) {
-      throw newCustomError("No User Log found", 404);
+
+    let isLog;
+
+    try {
+      isLog = await this.getMenstrualLog(userId);
+    } catch (error: any) {
+      if (error.statusCode === 404) {
+        return {
+          isInFlow: false,
+          flowStartDate: null,
+          flowEndDate: null,
+        };
+      }
+
+      throw error;
     }
 
     const flowStartDate = startOfDay(new Date(isLog.lastFlowDate));
     const flowEndDate = new Date(flowStartDate);
+
     flowEndDate.setDate(flowEndDate.getDate() + isLog.averageFlowDuration);
+
     const isInFlow = today >= flowStartDate && today < flowEndDate;
+
     return {
       isInFlow,
       flowStartDate,
       flowEndDate,
     };
   };
-
   static getCurrentMenstrualStatus = async (userId: Types.ObjectId) => {
     const status = await this.isCuurentlyInFlow(userId);
+
     if (!status.isInFlow) {
       return {
-        isInflow: false,
+        isInFlow: false,
         flowStartDate: status.flowStartDate,
         flowEndDate: status.flowEndDate,
         currentDay: 0,
         daysRemaining: 0,
       };
     }
-    const start = startOfDay(status.flowStartDate);
-    const end = startOfDay(status.flowEndDate);
+
+    const start = startOfDay(status.flowStartDate!);
+    const end = startOfDay(status.flowEndDate!);
     const today = startOfDay(new Date());
+
     const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
     const currentDay =
       Math.floor((today.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+
     const log = await this.getMenstrualLog(userId);
-    const daysRemaining = Math.max(log.averageFlowDuration - currentDay);
+
+    const daysRemaining = Math.max(0, log.averageFlowDuration - currentDay);
 
     return {
       isInFlow: true,

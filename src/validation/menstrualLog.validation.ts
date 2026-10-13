@@ -2,19 +2,13 @@ import Joi from "joi";
 
 export const createMenstrualLogValidation = Joi.object({
   lastFlowDate: Joi.date().required(),
-
   averageFlowDuration: Joi.number().integer().min(1).max(10).required(),
-
   cycleLength: Joi.number().integer().min(21).max(45).required(),
-
   useStandardCycle: Joi.boolean().required(),
-
   quranGoalDuringPeriod: Joi.number().integer().min(0).required(),
-
   memorizationFrequency: Joi.string()
     .valid("daily", "weekly", "occasionally")
     .required(),
-
   reminderPreference: Joi.object({
     spiritualEncouragement: Joi.boolean().required(),
     restReminder: Joi.boolean().required(),

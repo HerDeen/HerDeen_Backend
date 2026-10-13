@@ -89,7 +89,7 @@ router.put(
 );
 
 router.get(
-  "/planner/completed/tasks",
+  "/planner/completed/tasks/:date",
   authMiddleware as any,
   DailyPlanController.getCompletedTasks,
 );
@@ -108,7 +108,7 @@ router.post("/clear-cache", DailyPlanController.clearCahcePlan);
 
 //************************************||PRAYER MGMT.  ||******************************//
 router.patch(
-  "/prayer",
+  "/prayer/settings",
   authMiddleware as any,
   PrayerSettingController.updatePrayerSetting,
 );

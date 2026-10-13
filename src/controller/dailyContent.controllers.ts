@@ -12,18 +12,18 @@ export class DailySpiritualController {
 
   static updateContent = asyncWrapper(async (req: Request, res: Response) => {
     const contentId = req.params.contentId;
-    const objectId = new Types.ObjectId(contentId);
+    // const objectId = new Types.ObjectId(contentId);
     const { update } = req.body;
     const response = await DailySpiritualService.updateContent(
-      objectId,
+      contentId,
       update,
     );
     res.status(200).json({ success: true, payload: response });
   });
   static deleteContent = asyncWrapper(async (req: Request, res: Response) => {
     const contentId = req.params.contentId;
-    const objectId = new Types.ObjectId(contentId);
-    const response = await DailySpiritualService.deleteContent(objectId);
+    // const objectId = new Types.ObjectId(contentId);
+    const response = await DailySpiritualService.deleteContent(contentId);
     res.status(200).json({ success: true, payload: response });
   });
   static getTodayContent = asyncWrapper(async (req: Request, res: Response) => {

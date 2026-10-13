@@ -9,9 +9,12 @@ import { MenstrualLogService } from "./menstrualCycle.services";
 export class IbadahTrackerService {
   static getTodayTracker = async (userId: Types.ObjectId) => {
     const today = getToday();
-    const tracker = await ibadahTrackerModel.findOne({ userId, date: today });
+    const tracker = await ibadahTrackerModel
+      .findOne({ userId, date: today })
+      .select("-userId -date -__v");
     const MenstrualStatus =
       await MenstrualLogService.getCurrentMenstrualStatus(userId);
+
     if (tracker) {
       return {
         tracker: tracker,
@@ -22,7 +25,7 @@ export class IbadahTrackerService {
       userId,
       date: today,
     });
-    return { createTracker, MenstrualStatus };
+    return { tracker: createTracker, MenstrualStatus };
   };
   static togglePrayer = async (
     userId: Types.ObjectId,
@@ -61,7 +64,7 @@ export class IbadahTrackerService {
     tracker.tracker!.adhkaar = completed;
     await tracker?.tracker?.save();
     return {
-      adhkaaar: tracker.tracker?.adhkaar,
+      adhkaar: tracker.tracker?.adhkaar,
     };
   };
 }

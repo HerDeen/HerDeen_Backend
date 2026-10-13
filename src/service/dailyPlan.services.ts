@@ -9,11 +9,12 @@ import { dailyPlanQueue } from "../config/db.connection";
 import moment from "moment-timezone";
 import { tryCatch } from "bullmq";
 import {
+  editTaskValidator,
   planDateValidate,
   taskIdValidator,
   taskValidator,
 } from "../validation/plan.validate";
-import { updateValidator } from "../validation/plan.validate";
+
 import { any } from "joi";
 import { getTasks } from "node-cron";
 import { assignIds } from "../utils/crypto";
@@ -26,7 +27,6 @@ export class DailyPlanServices {
       throw newCustomError("Please select your life stage", 422);
     }
 
-    // console.log("user is", user.lifeStage === null);
     if (user.lifeStage === null) {
       throw newCustomError("Please select your current life Stage", 422);
     }
@@ -35,24 +35,23 @@ export class DailyPlanServices {
       throw newCustomError("Please select at least one Deen goal", 422);
     }
 
-    const normalizedTasks = (plan.userInputs?.tasks ?? []).map((t: any) => {
-      if (typeof t === "string") {
-        return {
-          title: t,
-          completed: false,
-          description: null,
-          time: null,
-        };
-      }
+    // const normalizedTasks = (plan.userInputs?.tasks ?? []).map((t: any) => {
+    //   if (typeof t === "string") {
+    //     return {
+    //       title: t,
+    //       completed: false,
+    //       description: null,
+    //       time: null,
+    //     };
+    //   }
 
-      console.log("safeuserinputs", plan);
-      return {
-        title: t.title,
-        completed: t.completed ?? false,
-        description: t.description ?? null,
-        time: t.time ?? null,
-      };
-    });
+    //   return {
+    //     title: t.title,
+    //     completed: t.completed ?? false,
+    //     description: t.description ?? null,
+    //     time: t.time ?? null,
+    //   };
+    // });
 
     const safeUserInputs = {
       tasks: plan.userInputs?.tasks ?? [],
@@ -91,19 +90,30 @@ export class DailyPlanServices {
   };
 
   static getPlan = async (userId: Types.ObjectId, date: string) => {
-    const plan = await dailyPlanModel.findOne({ userId, date });
+    const plan = await dailyPlanModel
+      .findOne({ userId, date })
+      .select("-_id -userId -rawAiOutput -__v -userId ");
     if (!plan) throw newCustomError("No plan found", 404);
     return plan;
   };
 
-  static getCompletedTasks = async (userId: Types.ObjectId) => {
-    const task = await dailyPlanModel.findOne({ userId });
-    if (!task) return null;
+  static getCompletedTasks = async (userId: Types.ObjectId, date: string) => {
+    const task = await dailyPlanModel.findOne({ userId, date });
+    if (!task) return "No task found";
     const tasks = task.completedTasks;
-    if (tasks.length <= 0) {
-      return "You haven't completed any task";
+    if (tasks.length === 0) {
+      return [];
     }
-    return tasks;
+    const completedTasks = tasks
+      .map((id: any) => {
+        const item = task.generatedPlan.find(
+          (t: any) => t._id.toString() === id,
+        );
+
+        return item ? { id, title: item.title } : null;
+      })
+      .filter(Boolean);
+    return completedTasks;
   };
   static planHistory = async (userId: Types.ObjectId) => {
     const plan = await dailyPlanModel.find({ userId }, { createdAt: 1 });
@@ -146,7 +156,7 @@ export class DailyPlanServices {
       title: string;
     },
   ) => {
-    const { value, error } = updateValidator.validate({ taskId, update });
+    const { value, error } = editTaskValidator.validate({ taskId, update });
     if (error) throw newCustomError(error.message, 400);
     const ObjectId = new mongoose.Types.ObjectId(taskId);
     if (!isValidObjectId(ObjectId)) throw newCustomError("Invalid Id", 401);

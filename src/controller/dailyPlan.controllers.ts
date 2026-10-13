@@ -36,7 +36,8 @@ export class DailyPlanController {
   static getCompletedTasks = asyncWrapper(
     async (req: IRequest, res: Response) => {
       const userId = req.user.id;
-      const response = await DailyPlanServices.getCompletedTasks(userId);
+      const date = req.params.date;
+      const response = await DailyPlanServices.getCompletedTasks(userId, date);
       res.status(200).json({ success: true, payload: response });
     },
   );
@@ -73,7 +74,7 @@ export class DailyPlanController {
 
   static addNewTask = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
-    const task = req.body;
+    const { task } = req.body;
     const response = await DailyPlanServices.addTask(userId, task);
     res.status(200).json({ success: true, payload: response });
   });
