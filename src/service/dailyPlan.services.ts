@@ -18,6 +18,7 @@ import {
 import { any } from "joi";
 import { getTasks } from "node-cron";
 import { assignIds } from "../utils/crypto";
+import { isValidDate } from "../utils/date.utils.ts";
 
 export class DailyPlanServices {
   static myPlan = async (userId: Types.ObjectId, plan: IDailyPlan) => {
@@ -90,6 +91,9 @@ export class DailyPlanServices {
   };
 
   static getPlan = async (userId: Types.ObjectId, date: string) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     const plan = await dailyPlanModel
       .findOne({ userId, date })
       .select("-_id -userId -rawAiOutput -__v -userId ");
@@ -98,6 +102,9 @@ export class DailyPlanServices {
   };
 
   static getCompletedTasks = async (userId: Types.ObjectId, date: string) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     const task = await dailyPlanModel.findOne({ userId, date });
     if (!task) return "No task found";
     const tasks = task.completedTasks;
@@ -177,6 +184,9 @@ export class DailyPlanServices {
   };
 
   static addTask = async (userId: Types.ObjectId, task: Task, date: string) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     const { value, error } = taskValidator.validate(task);
     if (error) throw newCustomError(error.message, 400);
     const tasks = await dailyPlanModel.findOne({ userId, date });
