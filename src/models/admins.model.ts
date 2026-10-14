@@ -4,7 +4,7 @@ const adminSchema = new Schema(
   {
     firstName: { type: String, required: false },
     lastName: { type: String, required: false },
-    username: { type: String, required: false, unique: true, trim: true },
+    username: { type: String, trim: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["superAdmin", "admin"], default: "admin" },
