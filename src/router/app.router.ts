@@ -77,13 +77,13 @@ router.get(
   DailyPlanController.planHistory,
 );
 router.put(
-  "/planner/completed/:task",
+  "/planner/completed/:date/:task",
   authMiddleware as any,
   DailyPlanController.taskCompleted,
 );
 
 router.put(
-  "/planner/edit/:taskId",
+  "/planner/edit/:date/:taskId",
   authMiddleware as any,
   DailyPlanController.editTask,
 );
@@ -100,7 +100,7 @@ router.post(
   DailyPlanController.addNewTask,
 );
 router.delete(
-  "/planner/:taskId",
+  "/planner/:date/:taskId",
   authMiddleware as any,
   DailyPlanController.removeTask,
 );

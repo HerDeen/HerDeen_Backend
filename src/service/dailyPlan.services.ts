@@ -128,9 +128,16 @@ export class DailyPlanServices {
     return plan;
   };
 
-  static taskCompleted = async (userId: Types.ObjectId, taskId: string) => {
+  static taskCompleted = async (
+    userId: Types.ObjectId,
+    date: string,
+    taskId: string,
+  ) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     if (!isValidObjectId(taskId)) throw newCustomError("Invalid Id", 404);
-    const tasks = await dailyPlanModel.findOne({ userId });
+    const tasks = await dailyPlanModel.findOne({ userId, date });
     if (!tasks) throw newCustomError("No record found", 404);
     //get task Id
     const getTask = tasks.generatedPlan.find(
@@ -156,6 +163,7 @@ export class DailyPlanServices {
 
   static editTask = async (
     userId: Types.ObjectId,
+    date: string,
     taskId: string,
     update: {
       description: string;
@@ -163,11 +171,14 @@ export class DailyPlanServices {
       title: string;
     },
   ) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     const { value, error } = editTaskValidator.validate({ taskId, update });
     if (error) throw newCustomError(error.message, 400);
     const ObjectId = new mongoose.Types.ObjectId(taskId);
     if (!isValidObjectId(ObjectId)) throw newCustomError("Invalid Id", 401);
-    const tasks = await dailyPlanModel.findOne({ userId });
+    const tasks = await dailyPlanModel.findOne({ userId, date });
     if (!tasks) throw newCustomError("No record found", 404);
     const tasked = tasks?.generatedPlan.find((task: any) =>
       task._id.equals(ObjectId),
@@ -207,14 +218,21 @@ export class DailyPlanServices {
     return newTask;
   };
 
-  static removeTask = async (userId: Types.ObjectId, taskId: string) => {
+  static removeTask = async (
+    userId: Types.ObjectId,
+    date: string,
+    taskId: string,
+  ) => {
+    if (!isValidDate(date)) {
+      throw newCustomError("Invalid date. Use YYYY-MM-DD.", 400);
+    }
     const { value, error } = taskIdValidator.validate(taskId);
     // console.log("first", value);
     if (error) throw newCustomError(error.message, 400);
     const objectId = new mongoose.Types.ObjectId(value);
     // console.log("sec", objectId);
     const taskDoc = await dailyPlanModel.findOne(
-      { userId, "generatedPlan._id": objectId },
+      { userId, date, "generatedPlan._id": objectId },
       { "generatedPlan.$": 1 },
     );
     if (!taskDoc) throw newCustomError("No Task Found", 404);
@@ -223,6 +241,6 @@ export class DailyPlanServices {
       { userId },
       { $pull: { generatedPlan: { _id: objectId } } },
     );
-    return `Task '${title}' has been removed successfully`; // const tasks = task?.generatedPlan?.find((task:any) => task.id)
+    return `Task '${title}' has been removed successfully`;
   };
 }

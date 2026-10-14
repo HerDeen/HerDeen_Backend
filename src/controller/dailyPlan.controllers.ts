@@ -4,6 +4,7 @@ import { IRequest } from "../middleware/authMiddleware";
 import { DailyPlanServices } from "../service/dailyPlan.services";
 import { resetCahce } from "../config/redis.config";
 import mongoose from "mongoose";
+import { date } from "joi";
 
 export class DailyPlanController {
   static myDailyPlan = asyncWrapper(
@@ -50,15 +51,20 @@ export class DailyPlanController {
 
   static taskCompleted = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
-    const task = req.params.task;
-    const response = await DailyPlanServices.taskCompleted(userId, task);
+    const { date, task } = req.params;
+    const response = await DailyPlanServices.taskCompleted(userId, date, task);
     res.status(200).json({ success: true, payload: response });
   });
   static editTask = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
-    const { taskId } = req.params;
+    const { date, taskId } = req.params;
     const { update } = req.body;
-    const response = await DailyPlanServices.editTask(userId, taskId, update);
+    const response = await DailyPlanServices.editTask(
+      userId,
+      date,
+      taskId,
+      update,
+    );
     res.status(201).json({ success: true, payload: response });
   });
   static clearCahcePlan = asyncWrapper(async (req: Request, res: Response) => {
@@ -82,8 +88,8 @@ export class DailyPlanController {
 
   static removeTask = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
-    const { taskId } = req.params;
-    const response = await DailyPlanServices.removeTask(userId, taskId);
+    const { date, taskId } = req.params;
+    const response = await DailyPlanServices.removeTask(userId, date, taskId);
     res.status(200).json({ success: true, payload: response });
   });
 }
