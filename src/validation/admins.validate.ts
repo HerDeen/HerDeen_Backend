@@ -49,9 +49,7 @@ export const resetPwd = Joi.object({
     })
     .required(),
 });
-export const emailValid = Joi.object({
-  email: Joi.string().email().required().trim(),
-});
+export const emailValid = Joi.string().email().required().trim();
 
 export const changePwd = Joi.object({
   password: Joi.string()
