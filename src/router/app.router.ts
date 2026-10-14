@@ -30,7 +30,7 @@ router.post("/auth/admin/login", authAdminController.login);
 
 router.post("/auth/admin/otp", authAdminController.requesOtp);
 router.patch(
-  "/auth/admin/passowrd",
+  "/auth/admin/password",
   adminAuthMiddleware as any,
   authAdminController.changePassword,
 );

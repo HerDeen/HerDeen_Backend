@@ -166,7 +166,7 @@ export class AdminService {
     return "Password changed";
   };
   static resetPassword = async (
-    adminId: Types.ObjectId,
+    email: string,
     otp: string,
     password: string,
     confirmPasssword: string,
@@ -175,7 +175,7 @@ export class AdminService {
     if (error) throw newCustomError(error.message, 400);
 
     //verify admin
-    const admin = await adminModel.findById(adminId);
+    const admin = await adminModel.findOne({ email });
     if (!admin) throw newCustomError("Invalid user", 404);
     const otpExist = await otpModel.findById({ entityId: admin._id });
     if (otpExist?.entityType !== "Admin") {

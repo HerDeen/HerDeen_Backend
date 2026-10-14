@@ -43,10 +43,10 @@ export class authAdminController {
   );
 
   static resetPassword = asyncWrapper(async (req: IARequest, res: Response) => {
-    const adminid = req.admin.id;
-    const { otp, password, confirmPasssword } = req.body;
+    // const adminid = req.admin.id;
+    const { email, otp, password, confirmPasssword } = req.body;
     const response = await AdminService.resetPassword(
-      adminid,
+      email,
       otp,
       password,
       confirmPasssword,
