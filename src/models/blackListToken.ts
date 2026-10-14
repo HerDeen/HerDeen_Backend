@@ -1,9 +1,9 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 const blacklistSchema = new Schema({
-  userId: {
+  tokenId: {
     type: Types.ObjectId,
-    ref: "User",
+    ref: "Token",
   },
   token: { type: String, required: true, index: true },
   revokedAt: { type: Date, default: Date.now },

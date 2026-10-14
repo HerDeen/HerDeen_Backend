@@ -4,8 +4,8 @@ const tokenSchema = new Schema(
   {
     userId: { type: Types.ObjectId, required: true, ref: "User" },
     token: { type: String, required: true },
-    iv: { type: String, required: true },
-    authTag: { type: String, required: true },
+    iv: { type: String, required: false },
+    authTag: { type: String, required: false },
     expiresAt: {
       type: Date,
       required: true,

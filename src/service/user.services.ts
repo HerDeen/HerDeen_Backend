@@ -144,12 +144,14 @@ export class UserServices {
       },
       loginTemplate,
     );
-    const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
+
+    const hashToken = crypto
+      .createHash("sha256")
+      .update(jwtKeyRefresh)
+      .digest("hex");
     await tokenModel.create({
       userId: userValid._id,
-      token: encryptToken.encrypted,
-      iv: encryptToken.iv,
-      authTag: encryptToken.authTag,
+      token: hashToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
     return {
@@ -161,16 +163,17 @@ export class UserServices {
 
   static logout = async (userId: Types.ObjectId, oldToken: string) => {
     const user = await userModel.findById(userId);
-
     //  Blacklist old token
     const hashToken = crypto
       .createHash("sha256")
       .update(oldToken)
       .digest("hex");
+    const token = await tokenModel.findOne({ token: hashToken });
     const blackListToken = await blackList.create({
-      userId,
+      tokenId: token?.id,
       token: hashToken,
       revokedAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // match expiry
+      expiresAt: token?.expiresAt,
     });
     if (!blackListToken) {
       console.log("token blacklist", blackListToken);
@@ -180,52 +183,170 @@ export class UserServices {
   };
 
   static refreshToken = async (userId: Types.ObjectId, oldToken: string) => {
+    // Validate the refresh token's signature and expiry.
+    let decoded: any;
+
+    try {
+      decoded = Jwt.verify(oldToken, jwt_refresh_token);
+    } catch {
+      throw newCustomError("Invalid or expired refresh token", 401);
+    }
+
+    if (String(decoded.userId) !== String(userId)) {
+      throw newCustomError("Invalid refresh token", 401);
+    }
+
     const user = await userModel.findById(userId);
-    const payload = {
-      userId: user?._id,
-      userType: user?.userType,
-    };
-    // check if token is blacklisted
-    const hashToken = crypto
+
+    if (!user) {
+      throw newCustomError("User not found", 401);
+    }
+
+    const oldTokenHash = crypto
       .createHash("sha256")
       .update(oldToken)
       .digest("hex");
-    const blacklist = await blackList.findOne({ userId, token: hashToken });
-    if (blacklist) throw newCustomError("blacklisted Token", 404);
-    //create new access token
-    let jwtkey = Jwt.sign(payload, jwt_secret, { expiresIn: jwt_exp as any });
-    if (!jwtkey) throw newCustomError("Unable to Login at this moment", 401);
-    //create new refresh token
-    let jwtKeyRefresh = Jwt.sign(payload, jwt_refresh_token, {
+
+    const storedToken = await tokenModel.findOne({
+      userId,
+      token: oldTokenHash,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!storedToken) {
+      throw newCustomError("Invalid or expired refresh token", 401);
+    }
+
+    const blacklist = await blackList.findOne({
+      tokenId: storedToken._id,
+      token: oldTokenHash,
+    });
+
+    if (blacklist) {
+      throw newCustomError("Refresh token has been revoked", 401);
+    }
+
+    const payload = {
+      userId: user._id,
+      userType: user.userType,
+    };
+
+    const authKey = Jwt.sign(payload, jwt_secret, {
+      expiresIn: jwt_exp as any,
+    });
+
+    const newRefreshToken = Jwt.sign(payload, jwt_refresh_token, {
       expiresIn: jwt_refresh_exp as any,
     });
-    if (!jwtKeyRefresh)
-      throw newCustomError("Unable to refresh at this moment", 401);
-    //  Blacklist old token
-    const storedToken = await tokenModel.findOne({ userId, token: hashToken });
-    await blackList.create({
-      userId,
-      token: hashToken,
-      revokedAt: new Date(),
-      expiresAt: storedToken?.expiresAt,
-    });
-    const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
-    await tokenModel.findOneAndUpdate(
-      { userId },
+
+    const newTokenHash = crypto
+      .createHash("sha256")
+      .update(newRefreshToken)
+      .digest("hex");
+
+    // Rotate only this device's token record.
+    const updatedToken = await tokenModel.findOneAndUpdate(
       {
-        token: encryptToken.encrypted,
-        iv: encryptToken.iv,
-        authTag: encryptToken.authTag,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        _id: storedToken._id,
+        userId,
+        token: oldTokenHash,
+        expiresAt: { $gt: new Date() },
       },
-      { set: true, upsert: true },
+      {
+        $set: {
+          token: newTokenHash,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      },
+      { new: true },
     );
+
+    if (!updatedToken) {
+      throw newCustomError("Refresh token has already been used", 401);
+    }
+
+    await blackList.create({
+      tokenId: storedToken._id,
+      token: oldTokenHash,
+      revokedAt: new Date(),
+      expiresAt: storedToken.expiresAt,
+    });
+
     return {
-      messsage: "refresh successful",
-      authKey: jwtkey,
-      auhtRefreshToken: jwtKeyRefresh,
+      message: "Refresh successful",
+      authKey,
+      refreshToken: newRefreshToken,
     };
   };
+
+  // static refreshToken = async (userId: Types.ObjectId, oldToken: string) => {
+  //   const user = await userModel.findById(userId);
+  //   const payload = {
+  //     userId: user?._id,
+  //     userType: user?.userType,
+  //   };
+  //   // check if token is blacklisted
+  //   const hashToken = crypto
+  //     .createHash("sha256")
+  //     .update(oldToken)
+  //     .digest("hex");
+  //   const token = await tokenModel.findOne({
+  //     userId: user?._id,
+  //     token: hashToken,
+  //   });
+  //   const blacklist = await blackList.findOne({
+  //     tokenId: token?.id,
+  //     token: hashToken,
+  //   });
+  //   console.log("token", token);
+  //   if (blacklist) throw newCustomError("blacklisted Token", 404);
+  //   //create new access token
+  //   let jwtkey = Jwt.sign(payload, jwt_secret, { expiresIn: jwt_exp as any });
+  //   if (!jwtkey) throw newCustomError("Unable to Login at this moment", 401);
+  //   //create new refresh token
+  //   let jwtKeyRefresh = Jwt.sign(payload, jwt_refresh_token, {
+  //     expiresIn: jwt_refresh_exp as any,
+  //   });
+  //   if (!jwtKeyRefresh)
+  //     throw newCustomError("Unable to refresh at this moment", 401);
+  //   //  Blacklist old token
+  //   const storedToken = await tokenModel.findOne({ userId, token: hashToken });
+  //   console.log("storedToken", storedToken);
+  //   await blackList.create({
+  //     tokenId: storedToken?.id,
+  //     token: hashToken,
+  //     revokedAt: new Date(),
+  //     expiresAt: storedToken?.expiresAt,
+  //   });
+  //   await tokenModel.findOneAndUpdate(
+  //     { userId },
+  //     {
+  //       $set: {
+  //         token: hashToken,
+  //         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  //       },
+  //     },
+  //     { new: true },
+  //   );
+
+  //   return {
+  //     messsage: "refresh successful",
+  //     authKey: jwtkey,
+  //     auhtRefreshToken: jwtKeyRefresh,
+  //   };
+
+  //     // const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
+  //   // await tokenModel.findOneAndUpdate(
+  //     //   { userId },
+  //     //   {
+  //       //     token: encryptToken.encrypted,
+  //       //     iv: encryptToken.iv,
+  //       //     authTag: encryptToken.authTag,
+  //       //     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  //       //   },
+  //       //   { set: true },
+  //   // );
+  // };
 
   static requestOtp = async (email: string) => {
     const { error } = mailValid.validate({ email });
