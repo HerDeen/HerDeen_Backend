@@ -46,7 +46,7 @@ export class AdminService {
     }
   };
   static createAdmin = async (email: string) => {
-    const { error } = emailValid.validate({ email });
+    const { error } = emailValid.validate(email);
     if (error) throw newCustomError(error.message, 400);
     // const admin = await adminModel.findById(adminId);
     //check if email exist
@@ -169,9 +169,14 @@ export class AdminService {
     email: string,
     otp: string,
     password: string,
-    confirmPasssword: string,
+    confirmPassword: string,
   ) => {
-    const { error } = resetPwd.validate({ password, confirmPasssword });
+    const { error } = resetPwd.validate({
+      email,
+      otp,
+      password,
+      confirmPassword,
+    });
     if (error) throw newCustomError(error.message, 400);
 
     //verify admin
@@ -187,11 +192,11 @@ export class AdminService {
       otp.toString(),
       otpExist.otp as string,
     );
-    if (confirmPasssword !== password) {
+    if (confirmPassword !== password) {
       throw newCustomError("Password must match", 422);
     }
     //hash password
-    const hashedPwd = await bcrypt.hash(confirmPasssword, 10);
+    const hashedPwd = await bcrypt.hash(confirmPassword, 10);
     if (!hashedPwd) throw newCustomError("Unable to hash password", 422);
     const response = await adminModel.findByIdAndUpdate(
       { _id: admin._id },
