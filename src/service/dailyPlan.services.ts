@@ -176,10 +176,10 @@ export class DailyPlanServices {
     return tasked;
   };
 
-  static addTask = async (userId: Types.ObjectId, task: Task) => {
+  static addTask = async (userId: Types.ObjectId, task: Task, date: string) => {
     const { value, error } = taskValidator.validate(task);
     if (error) throw newCustomError(error.message, 400);
-    const tasks = await dailyPlanModel.findOne({ userId });
+    const tasks = await dailyPlanModel.findOne({ userId, date });
     if (!tasks) throw newCustomError("No record found", 404);
     const newTask = {
       ...value,

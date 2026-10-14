@@ -95,7 +95,7 @@ router.get(
 );
 
 router.post(
-  "/planner/add",
+  "/planner/add/:date",
   authMiddleware as any,
   DailyPlanController.addNewTask,
 );

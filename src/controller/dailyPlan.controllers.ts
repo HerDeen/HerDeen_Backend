@@ -75,7 +75,8 @@ export class DailyPlanController {
   static addNewTask = asyncWrapper(async (req: IRequest, res: Response) => {
     const userId = req.user.id;
     const { task } = req.body;
-    const response = await DailyPlanServices.addTask(userId, task);
+    const date = req.params.date;
+    const response = await DailyPlanServices.addTask(userId, task, date);
     res.status(200).json({ success: true, payload: response });
   });
 
