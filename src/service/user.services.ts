@@ -190,7 +190,7 @@ export class UserServices {
       .createHash("sha256")
       .update(oldToken)
       .digest("hex");
-    const blacklist = await blackList.findOne({ token: hashToken });
+    const blacklist = await blackList.findOne({ userId, token: hashToken });
     if (blacklist) throw newCustomError("blacklisted Token", 404);
     //create new access token
     let jwtkey = Jwt.sign(payload, jwt_secret, { expiresIn: jwt_exp as any });
@@ -202,11 +202,11 @@ export class UserServices {
     if (!jwtKeyRefresh)
       throw newCustomError("Unable to refresh at this moment", 401);
     //  Blacklist old token
-    const storedToken = await tokenModel.findOne({ token: hashToken });
+    const storedToken = await tokenModel.findOne({ userId, token: hashToken });
     await blackList.create({
       userId,
       token: hashToken,
-      revokedAt: new Date(), // match expiry
+      revokedAt: new Date(),
       expiresAt: storedToken?.expiresAt,
     });
     const encryptToken = await Secure.encrypt(jwtKeyRefresh, encrypt_password);
