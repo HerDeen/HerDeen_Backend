@@ -4,7 +4,7 @@ const adminSchema = new Schema(
   {
     firstName: { type: String, required: false },
     lastName: { type: String, required: false },
-    username: { type: String, required: false, unique: true },
+    username: { type: String, required: false, unique: true, trim: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["superAdmin", "admin"], default: "admin" },
@@ -23,5 +23,13 @@ const adminSchema = new Schema(
     timestamps: true,
   },
 );
-
+adminSchema.index(
+  { username: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      username: { $type: "string" },
+    },
+  },
+);
 export const adminModel = mongoose.model("Admin", adminSchema);
