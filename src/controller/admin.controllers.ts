@@ -24,7 +24,7 @@ export class authAdminController {
   });
 
   static requesOtp = asyncWrapper(async (req: IARequest, res: Response) => {
-    const email = req.admin.email;
+    const { email } = req.body;
     const response = await AdminService.requestOtp(email);
     res.status(200).json({ success: true, payload: response });
   });
