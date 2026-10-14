@@ -135,6 +135,7 @@ export class AdminService {
       },
       otpTemplate,
     );
+    return "An otp has been sent to your email";
   };
   static changePassword = async (
     adminId: Types.ObjectId,
@@ -182,7 +183,7 @@ export class AdminService {
     //verify admin
     const admin = await adminModel.findOne({ email });
     if (!admin) throw newCustomError("Invalid user", 404);
-    const otpExist = await otpModel.findById({ entityId: admin._id });
+    const otpExist = await otpModel.findOne({ email });
     if (otpExist?.entityType !== "Admin") {
       throw newCustomError("Invalid OTP", 404);
     }
