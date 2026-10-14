@@ -54,12 +54,12 @@ export class AuthControllers {
   });
 
   static resetPassword = asyncWrapper(async (req: IRequest, res: Response) => {
-    const { email, otp, password, confirmPasssword } = req.body;
+    const { email, otp, password, confirmPassword } = req.body;
     const response = await UserServices.resetPassword(
       email,
       otp,
       password,
-      confirmPasssword,
+      confirmPassword,
     );
     res.status(201).json({ success: true, payload: response });
   });

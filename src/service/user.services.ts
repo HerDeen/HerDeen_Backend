@@ -383,13 +383,13 @@ export class UserServices {
     email: string,
     otp: string,
     password: string,
-    confirmPasssword: string,
+    confirmPassword: string,
   ) => {
     const { error } = resetValid.validate({
       email,
       otp,
       password,
-      confirmPasssword,
+      confirmPassword,
     });
     if (error) throw newCustomError(error.message, 400);
     //check email
@@ -406,10 +406,10 @@ export class UserServices {
     );
     if (!otpValid) throw newCustomError("Invalid OTP", 401);
     //compare new passwords
-    if (confirmPasssword !== password)
+    if (confirmPassword !== password)
       throw newCustomError("Password must match", 422);
     //hash password
-    const hashPassword = await bcrypt.hash(confirmPasssword, 10);
+    const hashPassword = await bcrypt.hash(confirmPassword, 10);
     //update password
     const response = await userModel.findByIdAndUpdate(
       { _id: user._id },

@@ -84,5 +84,3 @@ export const userAiValid = Joi.object({
     )
     .min(1),
 });
-
-
